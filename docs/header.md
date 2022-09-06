@@ -1,8 +1,7 @@
 # Terraform ECS Fargate
 
-A module used for provisioning web or api application stacks on [AWS ECS Fargate][fargate]. The majority of the module has been adapted from [this template].[fargate-template].
+A module used for provisioning web or api application stacks on [AWS ECS Fargate][fargate]. The majority of the module has been adapted from [this template][fargate-template].
 
-Acknowledgment of previous commits.
 
 ![diagram](diagram.png)
 
@@ -30,7 +29,4 @@ module "fargate" {
 ## Usage and link to base
 
 It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, this file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. This also pairs well with --insert link for base here--
-
-<!-- BEGIN_TF_DOCS -->
-    {{ .Content }}
-<!-- END_TF_DOCS -->    
+ 
