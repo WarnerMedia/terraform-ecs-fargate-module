@@ -1,0 +1,16 @@
+formatter: markdown
+sort:
+  enabled: true
+  by: required
+sections:
+  show:
+    - header
+    - inputs
+    - outputs
+    - footer
+output:
+  file: README.md
+  mode: replace
+  
+header-from: docs/header.md
+footer-from: docs/footer.md
