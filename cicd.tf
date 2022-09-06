@@ -1,14 +1,19 @@
 # create ci/cd user with access keys (for build system)
 resource "aws_iam_user" "cicd" {
-  name = "srv_${var.app}_${var.environment}_cicd"
+  count = var.create_cicd_user ? 1 : 0
+  name  = "srv_${var.app}_${var.environment}_cicd"
+  tags  = var.tags
 }
 
 resource "aws_iam_access_key" "cicd_keys" {
-  user = aws_iam_user.cicd.name
+  count = var.create_cicd_user ? 1 : 0
+  user  = aws_iam_user.cicd[0].name
 }
 
 # grant required permissions to deploy
 data "aws_iam_policy_document" "cicd_policy" {
+    count = var.create_cicd_user ? 1 : 0
+
   # allows user to push/pull to the registry
   statement {
     sid = "ecr"
@@ -24,7 +29,7 @@ data "aws_iam_policy_document" "cicd_policy" {
     ]
 
     resources = [
-      data.aws_ecr_repository.ecr.arn,
+      data.aws_ecr_repository.ecr[0].arn,
     ]
   }
 
@@ -61,21 +66,19 @@ data "aws_iam_policy_document" "cicd_policy" {
 }
 
 resource "aws_iam_user_policy" "cicd_user_policy" {
+  count  = var.create_cicd_user ? 1 : 0
   name   = "${var.app}_${var.environment}_cicd"
-  user   = aws_iam_user.cicd.name
-  policy = data.aws_iam_policy_document.cicd_policy.json
+  user   = aws_iam_user.cicd[0].name
+  policy = data.aws_iam_policy_document.cicd_policy[0].json
 }
 
 data "aws_ecr_repository" "ecr" {
-  name = var.app
+  count = var.create_cicd_user ? 1 : 0
+  name = var.default_ecr
 }
 
-# The AWS keys for the CICD user to use in a build system
+# A command to run that can extract the AWS keys for the CICD user to use in a build system
+#  (remove the \ in the select section
 output "cicd_keys" {
-  value = "terraform show -json | jq '.values.root_module.resources | .[] | select ( .address == \"aws_iam_access_key.cicd_keys\") | { AWS_ACCESS_KEY_ID: .values.id, AWS_SECRET_ACCESS_KEY: .values.secret }'"
-}
-
-# The URL for the docker image repo in ECR
-output "docker_registry" {
-  value = data.aws_ecr_repository.ecr.repository_url
+  value = "terraform show -json | jq '.values.root_module.child_modules | .[] | .resources | .[] | select ( .address == \"module.fargate.aws_iam_access_key.cicd_keys[0]\") | { AWS_ACCESS_KEY_ID: .values.id, AWS_SECRET_ACCESS_KEY: .values.secret }'"
 }

@@ -61,29 +61,26 @@ locals {
     "secretsmanager:GetSecretValue",
   ]
 
-  # list of saml users for policies
-  saml_user_ids = flatten([
+  # list of users for policies
+  user_ids = flatten([
     data.aws_caller_identity.current.user_id,
     data.aws_caller_identity.current.account_id,
-    formatlist(
-      "%s:%s",
-      data.aws_iam_role.saml_role.unique_id,
-      var.secrets_saml_users,
-    ),
+    var.secrets_users
   ])
 
-  # list of role users and saml users for policies
+  # list of role users and users for policies
   role_and_saml_ids = flatten([
     "${aws_iam_role.app_role.unique_id}:*",
     "${aws_iam_role.ecsTaskExecutionRole.unique_id}:*",
-    local.saml_user_ids,
+    local.user_ids,
   ])
 
-  sm_arn = "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.app}-${var.environment}-??????"
+  sm_arn = "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:${var.app}-${var.environment}-??????"
 }
 
 # create the KMS key for this secret
 resource "aws_kms_key" "sm_kms_key" {
+  count       = var.secrets_manager ? 1 : 0
   description = "${var.app}-${var.environment}"
   policy      = data.aws_iam_policy_document.kms_resource_policy_doc.json
   tags = merge(
@@ -96,14 +93,15 @@ resource "aws_kms_key" "sm_kms_key" {
 
 # alias for the key
 resource "aws_kms_alias" "sm_kms_alias" {
+  count         = var.secrets_manager ? 1 : 0
   name          = "alias/${var.app}-${var.environment}"
-  target_key_id = aws_kms_key.sm_kms_key.key_id
+  target_key_id = aws_kms_key.sm_kms_key[0].key_id
 }
 
 # the kms key policy
 data "aws_iam_policy_document" "kms_resource_policy_doc" {
   statement {
-    sid    = "DenyWriteToAllExceptSAMLUsers"
+    sid    = "DenyWriteToAllExcectUsers"
     effect = "Deny"
 
     principals {
@@ -117,12 +115,12 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
     condition {
       test     = "StringNotLike"
       variable = "aws:userId"
-      values   = local.saml_user_ids
+      values   = local.user_ids
     }
   }
 
   statement {
-    sid    = "DenyReadToAllExceptRoleAndSAMLUsers"
+    sid    = "DenyReadToAllExceptRoleAndUsers"
     effect = "Deny"
 
     principals {
@@ -141,7 +139,7 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
   }
 
   statement {
-    sid    = "AllowWriteToSAMLUsers"
+    sid    = "AllowWriteToUsers"
     effect = "Allow"
 
     principals {
@@ -155,12 +153,12 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
     condition {
       test     = "StringLike"
       variable = "aws:userId"
-      values   = local.saml_user_ids
+      values   = local.user_ids
     }
   }
 
   statement {
-    sid    = "AllowReadRoleAndSAMLUsers"
+    sid    = "AllowReadRoleAndUsers"
     effect = "Allow"
 
     principals {
@@ -181,27 +179,25 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
 
 # create the secretsmanager secret
 resource "aws_secretsmanager_secret" "sm_secret" {
-  name       = "${var.app}-${var.environment}"
-  kms_key_id = aws_kms_key.sm_kms_key.key_id
-  tags       = var.tags
-  policy     = data.aws_iam_policy_document.sm_resource_policy_doc.json
+  count                   = var.secrets_manager ? 1 : 0
+  name                    = "${var.app}-${var.environment}"
+  kms_key_id              = aws_kms_key.sm_kms_key[0].key_id
+  tags                    = var.tags
+  policy                  = data.aws_iam_policy_document.sm_resource_policy_doc.json
+  recovery_window_in_days = var.secrets_manager_recovery_window_in_days
 }
 
 # create the placeholder secret json
 resource "aws_secretsmanager_secret_version" "initial" {
-  secret_id     = aws_secretsmanager_secret.sm_secret.id
+  count         = var.secrets_manager ? 1 : 0
+  secret_id     = aws_secretsmanager_secret.sm_secret[0].id
   secret_string = "{}"
-}
-
-# get the saml user info so we can get the unique_id
-data "aws_iam_role" "saml_role" {
-  name = var.saml_role
 }
 
 # resource policy doc that limits access to secret
 data "aws_iam_policy_document" "sm_resource_policy_doc" {
   statement {
-    sid    = "DenyWriteToAllExceptSAMLUsers"
+    sid    = "DenyWriteToAllExceptUsers"
     effect = "Deny"
 
     principals {
@@ -215,12 +211,12 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
     condition {
       test     = "StringNotLike"
       variable = "aws:userId"
-      values   = local.saml_user_ids
+      values   = local.user_ids
     }
   }
 
   statement {
-    sid    = "DenyReadToAllExceptRoleAndSAMLUsers"
+    sid    = "DenyReadToAllExceptRoleAndUsers"
     effect = "Deny"
 
     principals {
@@ -239,7 +235,7 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
   }
 
   statement {
-    sid    = "AllowWriteToSAMLUsers"
+    sid    = "AllowWriteToUsers"
     effect = "Allow"
 
     principals {
@@ -253,12 +249,12 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
     condition {
       test     = "StringLike"
       variable = "aws:userId"
-      values   = local.saml_user_ids
+      values   = local.user_ids
     }
   }
 
   statement {
-    sid    = "AllowReadRoleAndSAMLUsers"
+    sid    = "AllowReadRoleAndUsers"
     effect = "Allow"
 
     principals {
@@ -276,8 +272,12 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
     }
   }
 }
+# The short name id of the created secret manager (if enabled)
+output "secret_id" {
+  value = aws_secretsmanager_secret.sm_secret[0].id
+}
 
-# The users (email addresses) from the saml role to give access
-variable "secrets_saml_users" {
-  type = list(string)
+# The arn of the created secret manager (if enabled)
+output "secret_arn" {
+  value = aws_secretsmanager_secret.sm_secret[0].arn
 }

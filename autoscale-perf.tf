@@ -19,12 +19,12 @@
  * production, consider using a higher number.
  *
  * There should be a [considerable gap](https://en.wikipedia.org/wiki/Deadband) between
- * `ecs_as_cpu_low_threshold_per` and
- * `ecs_as_cpu_high_threshold_per` so that the number of
+ * `scaling_cpu_low_threshold` and
+ * `scaling_cpu_high_threshold` so that the number of
  * containers is not continually being autoscaled up and down.   If
  * `ecs_autoscale_min_instances==1`, then
- * `ecs_as_cpu_high_threshold_per` should be more than
- * twice ecs_as_cpu_low_threshold_per`.
+ * `scaling_cpu_high_threshold` should be more than
+ * twice scaling_cpu_low_threshold`.
  *
  * In the CloudWatch section of the AWS Console, you will often see the
  * alarms created by this module in an ALARM state, which are displayed in
@@ -34,55 +34,49 @@
  *
  */
 
-# If the average CPU utilization over a minute drops to this threshold,
-# the number of containers will be reduced (but not below ecs_autoscale_min_instances).
-variable "ecs_as_cpu_low_threshold_per" {
-  default = "20"
-}
-
-# If the average CPU utilization over a minute rises to this threshold,
-# the number of containers will be increased (but not above ecs_autoscale_max_instances).
-variable "ecs_as_cpu_high_threshold_per" {
-  default = "80"
-}
-
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
-  alarm_name          = "${var.app}-${var.environment}-CPU-Utilization-High-${var.ecs_as_cpu_high_threshold_per}"
+  count = var.do_performance_autoscaling ? 1 : 0
+
+  alarm_name          = "${var.app}-${var.environment}-CPU-Utilization-High-${var.scaling_cpu_high_threshold}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = var.ecs_as_cpu_high_threshold_per
+  threshold           = var.scaling_cpu_high_threshold
 
   dimensions = {
     ClusterName = aws_ecs_cluster.app.name
     ServiceName = aws_ecs_service.app.name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.app_up.arn]
+  alarm_actions = [aws_appautoscaling_policy.app_up[0].arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
-  alarm_name          = "${var.app}-${var.environment}-CPU-Utilization-Low-${var.ecs_as_cpu_low_threshold_per}"
+  count = var.do_performance_autoscaling ? 1 : 0
+
+  alarm_name          = "${var.app}-${var.environment}-CPU-Utilization-Low-${var.scaling_cpu_low_threshold}"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = var.ecs_as_cpu_low_threshold_per
+  threshold           = var.scaling_cpu_low_threshold
 
   dimensions = {
     ClusterName = aws_ecs_cluster.app.name
     ServiceName = aws_ecs_service.app.name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.app_down.arn]
+  alarm_actions = [aws_appautoscaling_policy.app_down[0].arn]
 }
 
 resource "aws_appautoscaling_policy" "app_up" {
+  count = var.do_performance_autoscaling ? 1 : 0
+
   name               = "app-scale-up"
   service_namespace  = aws_appautoscaling_target.app_scale_target.service_namespace
   resource_id        = aws_appautoscaling_target.app_scale_target.resource_id
@@ -101,6 +95,8 @@ resource "aws_appautoscaling_policy" "app_up" {
 }
 
 resource "aws_appautoscaling_policy" "app_down" {
+  count = var.do_performance_autoscaling ? 1 : 0
+
   name               = "app-scale-down"
   service_namespace  = aws_appautoscaling_target.app_scale_target.service_namespace
   resource_id        = aws_appautoscaling_target.app_scale_target.resource_id

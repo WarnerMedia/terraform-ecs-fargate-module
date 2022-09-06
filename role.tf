@@ -1,7 +1,3 @@
-# The SAML role to use for adding users to the ECR policy
-variable "saml_role" {
-}
-
 # creates an application role that the container/task runs as
 resource "aws_iam_role" "app_role" {
   name               = "${var.app}-${var.environment}"
@@ -15,7 +11,6 @@ resource "aws_iam_role_policy" "app_policy" {
   policy = data.aws_iam_policy_document.app_policy.json
 }
 
-# TODO: fill out custom policy
 data "aws_iam_policy_document" "app_policy" {
   statement {
     actions = [
@@ -39,14 +34,6 @@ data "aws_iam_policy_document" "app_role_assume_role_policy" {
     principals {
       type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-
-    principals {
-      type = "AWS"
-
-      identifiers = [
-        "arn:aws:sts::${data.aws_caller_identity.current.account_id}:assumed-role/${var.saml_role}/me@example.com",
-      ]
     }
   }
 }

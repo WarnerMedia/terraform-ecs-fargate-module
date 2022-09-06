@@ -3,49 +3,12 @@
 # delete either of these if your app doesn't need them
 # but you need at least one
 
-# Whether the application is available on the public internet,
-# also will determine which subnets will be used (public or private)
-variable "internal" {
-  default = true
-}
-
-# The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused
-variable "deregistration_delay" {
-  default = "30"
-}
-
-# The path to the health check for the load balancer to know if the container(s) are ready
-variable "health_check" {
-}
-
-# How often to check the liveliness of the container
-variable "health_check_interval" {
-  default = "30"
-}
-
-# How long to wait for the response on the health check path
-variable "health_check_timeout" {
-  default = "10"
-}
-
-# What HTTP response code to listen for
-variable "health_check_matcher" {
-  default = "200"
-}
-
-variable "lb_access_logs_expiration_days" {
-  default = "3"
-}
-
 resource "aws_alb" "main" {
   name = "${var.app}-${var.environment}"
 
   # launch lbs in public or private subnets based on "internal" variable
-  internal = var.internal
-  subnets = split(
-    ",",
-    var.internal == true ? var.private_subnets : var.public_subnets,
-  )
+  internal        = ! var.create_public_ip
+  subnets         = var.load_balancer_subnets
   security_groups = [aws_security_group.nsg_lb.id]
   tags            = var.tags
 
@@ -82,26 +45,38 @@ data "aws_elb_service_account" "main" {
 # bucket for storing ALB access logs
 resource "aws_s3_bucket" "lb_access_logs" {
   bucket        = "${var.app}-${var.environment}-lb-access-logs"
-  acl           = "private"
   tags          = var.tags
   force_destroy = true
+}
 
-  lifecycle_rule {
-    id                                     = "cleanup"
-    enabled                                = true
-    abort_incomplete_multipart_upload_days = 1
-    prefix                                 = ""
+resource "aws_s3_bucket_acl" "example_bucket_acl" {
+  bucket = aws_s3_bucket.lb_access_logs.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "bucket_encryption" {
+  bucket = aws_s3_bucket.lb_access_logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "bucket_lifecycle_multipart" {
+  bucket = aws_s3_bucket.lb_access_logs.id
+
+  rule {
+    id     = "cleanup"
+    status = "Enabled"
+
+    # This should not happen, but just in case
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1
+    }
 
     expiration {
       days = var.lb_access_logs_expiration_days
-    }
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
     }
   }
 }
@@ -131,6 +106,15 @@ resource "aws_s3_bucket_policy" "lb_access_logs" {
   ]
 }
 POLICY
+}
+
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.lb_access_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # The load balancer DNS name

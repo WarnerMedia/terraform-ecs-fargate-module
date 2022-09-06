@@ -12,30 +12,6 @@
  * migrated the real application containers to the task definition.
  */
 
-# How many containers to run
-variable "replicas" {
-  default = "1"
-}
-
-# The name of the container to run
-variable "container_name" {
-  default = "app"
-}
-
-# The minimum number of containers that should be running.
-# Must be at least 1.
-# used by both autoscale-perf.tf and autoscale.time.tf
-# For production, consider using at least "2".
-variable "ecs_autoscale_min_instances" {
-  default = "1"
-}
-
-# The maximum number of containers that should be running.
-# used by both autoscale-perf.tf and autoscale.time.tf
-variable "ecs_autoscale_max_instances" {
-  default = "8"
-}
-
 resource "aws_ecs_cluster" "app" {
   name = "${var.app}-${var.environment}"
   setting {
@@ -43,17 +19,6 @@ resource "aws_ecs_cluster" "app" {
     value = "enabled"
   }
   tags = var.tags
-}
-
-# The default docker image to deploy with the infrastructure.
-# Note that you can use the fargate CLI for application concerns
-# like deploying actual application images and environment variables
-# on top of the infrastructure provisioned by this template
-# https://github.com/turnerlabs/fargate
-# note that the source for the turner default backend image is here:
-# https://github.com/turnerlabs/turner-defaultbackend
-variable "default_backend_image" {
-  default = "quay.io/turner/turner-defaultbackend:0.2.0"
 }
 
 resource "aws_appautoscaling_target" "app_scale_target" {
@@ -64,66 +29,58 @@ resource "aws_appautoscaling_target" "app_scale_target" {
   min_capacity       = var.ecs_autoscale_min_instances
 }
 
+data "aws_region" "current" {}
+
 resource "aws_ecs_task_definition" "app" {
   family                   = "${var.app}-${var.environment}"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = var.cpu_units
+  memory                   = var.memory_size
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
 
   # defined in role.tf
   task_role_arn = aws_iam_role.app_role.arn
 
-  container_definitions = <<DEFINITION
-[
-  {
-    "name": "${var.container_name}",
-    "image": "${var.default_backend_image}",
-    "essential": true,
-    "portMappings": [
-      {
-        "protocol": "tcp",
-        "containerPort": ${var.container_port},
-        "hostPort": ${var.container_port}
-      }
-    ],
-    "environment": [
-      {
-        "name": "PORT",
-        "value": "${var.container_port}"
-      },
-      {
-        "name": "HEALTHCHECK",
-        "value": "${var.health_check}"
-      },
-      {
-        "name": "ENABLE_LOGGING",
-        "value": "false"
-      },
-      {
-        "name": "PRODUCT",
-        "value": "${var.app}"
-      },
-      {
-        "name": "ENVIRONMENT",
-        "value": "${var.environment}"
-      }
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "/fargate/service/${var.app}-${var.environment}",
-        "awslogs-region": "${var.region}",
-        "awslogs-stream-prefix": "ecs"
-      }
-    }
-  }
-]
-DEFINITION
+  container_definitions = var.container_definitions!="" ? var.container_definitions : module.task_definition.json_map_encoded_list
 
 
   tags = var.tags
+}
+
+
+module "task_definition" {
+  source = "cloudposse/ecs-container-definition/aws"
+  version = "v0.58.1"
+
+  container_name  = var.container_name
+  container_image = var.container_image
+  essential       = true
+
+  port_mappings = [
+    {
+      protocol      = "tcp"
+      containerPort = var.container_port
+      hostPort      = var.container_port
+    }
+  ]
+
+  environment = [
+    {
+      name  = "PORT"
+      value = var.container_port
+    }
+  ]
+
+  log_configuration = {
+    logDriver = "awslogs"
+    options = {
+      awslogs-group         = "/fargate/service/${var.app}-${var.environment}",
+      awslogs-region        = data.aws_region.current.name
+      awslogs-stream-prefix = "ecs"
+    }
+  }
+
 }
 
 resource "aws_ecs_service" "app" {
@@ -135,7 +92,7 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     security_groups = [aws_security_group.nsg_task.id]
-    subnets         = split(",", var.private_subnets)
+    subnets         = var.fargate_subnets
   }
 
   load_balancer {
@@ -150,12 +107,6 @@ resource "aws_ecs_service" "app" {
 
   # workaround for https://github.com/hashicorp/terraform/issues/12634
   depends_on = [aws_alb_listener.http]
-
-  # [after initial apply] don't override changes made to task_definition
-  # from outside of terraform (i.e.; fargate cli)
-  lifecycle {
-    ignore_changes = [task_definition]
-  }
 }
 
 # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html
