@@ -28,5 +28,5 @@ module "fargate" {
 
 ## Usage and link to base
 
-It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, this file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. This also pairs well with --insert link for base here--
+It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, the state file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. This also pairs well with --insert link for base here--
  

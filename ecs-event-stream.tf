@@ -68,6 +68,7 @@ resource "aws_lambda_function" "ecs_event_stream" {
 }
 
 resource "aws_lambda_alias" "ecs_event_stream" {
+  count            = var.create_ecs_dashboard ? 1 : 0
   name             = aws_lambda_function.ecs_event_stream[0].function_name
   description      = "latest"
   function_name    = aws_lambda_function.ecs_event_stream[0].function_name

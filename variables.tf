@@ -230,8 +230,7 @@ variable "ecs_autoscale_min_instances" {
   default = 1
 }
 
-# The maximum number of containers that should be running.
-# used by both autoscale-perf.tf and autoscale.time.tf
+# The maximum number of containers that should be running when scaling up
 variable "ecs_autoscale_max_instances" {
   type = number
   default = 4

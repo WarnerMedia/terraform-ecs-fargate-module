@@ -1,9 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Terraform ECS Fargate
 
-A module used for provisioning web or api application stacks on [AWS ECS Fargate][fargate]. The majority of the module has been adapted from [this template].[fargate-template].
-
-Acknowledgment of previous commits.
+A module used for provisioning web or api application stacks on [AWS ECS Fargate][fargate]. The majority of the module has been adapted from [this template][fargate-template].
 
 ![diagram](diagram.png)
 
