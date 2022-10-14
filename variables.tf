@@ -235,3 +235,22 @@ variable "ecs_autoscale_max_instances" {
   type = number
   default = 4
 }
+
+# The OS Family of the task, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform 
+variable "operating_system_family" {
+  type = string
+  default = "LINUX"
+}
+
+# The CPU Architecture, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform
+variable "cpu_architecture" {
+  type = string
+  default = "X86_64"
+}
+
+# The fargate platform version. These version numbers are different between linux and windows, make sure to use the correct
+#  value or leave it at LATEST: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html
+variable "platform_version" {
+  type = string
+  default = "LATEST"
+}
