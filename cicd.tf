@@ -80,5 +80,9 @@ data "aws_ecr_repository" "ecr" {
 # A command to run that can extract the AWS keys for the CICD user to use in a build system
 #  (remove the \ in the select section
 output "cicd_keys" {
-  value = "terraform show -json | jq '.values.root_module.child_modules | .[] | .resources | .[] | select ( .address == \"module.fargate.aws_iam_access_key.cicd_keys[0]\") | { AWS_ACCESS_KEY_ID: .values.id, AWS_SECRET_ACCESS_KEY: .values.secret }'"
+  value = <<EOT
+  >> Copy and paste this command to see the AWS IAM keys for CICD:
+terraform show -json |
+jq '.values.root_module.child_modules[].resources[] | select ( .address == "module.fargate.aws_iam_access_key.cicd_keys[0]") |.values| { AWS_ACCESS_KEY_ID: .id, AWS_SECRET_ACCESS_KEY: .secret }'
+EOT
 }
