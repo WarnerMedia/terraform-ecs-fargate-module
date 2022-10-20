@@ -44,6 +44,10 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = var.container_definitions!="" ? var.container_definitions : module.task_definition.json_map_encoded_list
 
+ runtime_platform {
+    operating_system_family = var.operating_system_family
+    cpu_architecture        = var.cpu_architecture
+  }
 
   tags = var.tags
 }
@@ -89,6 +93,8 @@ resource "aws_ecs_service" "app" {
   launch_type     = "FARGATE"
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.replicas
+
+  platform_version = var.platform_version
 
   network_configuration {
     security_groups = [aws_security_group.nsg_task.id]
