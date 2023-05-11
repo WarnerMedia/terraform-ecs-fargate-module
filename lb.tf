@@ -49,11 +49,6 @@ resource "aws_s3_bucket" "lb_access_logs" {
   force_destroy = true
 }
 
-resource "aws_s3_bucket_acl" "example_bucket_acl" {
-  bucket = aws_s3_bucket.lb_access_logs.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "bucket_encryption" {
   bucket = aws_s3_bucket.lb_access_logs.id
   rule {
