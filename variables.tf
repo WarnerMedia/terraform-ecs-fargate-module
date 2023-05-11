@@ -179,7 +179,7 @@ variable "replicas" {
 # note that the source for the turner default backend image is here:
 # https://github.com/turnerlabs/turner-defaultbackend
 variable "container_image" {
-  default = "quay.io/turner/turner-defaultbackend:0.2.0"
+  default = "ghcr.io/warnermedia/fargate-default-backend:v0.9.0"
 }
 
 # See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
