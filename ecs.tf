@@ -12,17 +12,17 @@
  * migrated the real application containers to the task definition.
  */
 
- locals {
-  ecs_cluster_arn = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].arn : aws_ecs_cluster.app[0].arn
-  ecs_cluster_id = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].id : aws_ecs_cluster.app[0].id
+locals {
+  ecs_cluster_arn  = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].arn : aws_ecs_cluster.app[0].arn
+  ecs_cluster_id   = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].id : aws_ecs_cluster.app[0].id
   ecs_cluster_name = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].cluster_name : aws_ecs_cluster.app[0].name
- }
+}
 
- data "aws_ecs_cluster" "app" {
+data "aws_ecs_cluster" "app" {
   count = var.ecs_cluster_name != "" ? 1 : 0
 
   cluster_name = var.ecs_cluster_name
- }
+}
 
 resource "aws_ecs_cluster" "app" {
   count = var.ecs_cluster_name == "" ? 1 : 0
@@ -56,9 +56,9 @@ resource "aws_ecs_task_definition" "app" {
   # defined in role.tf
   task_role_arn = aws_iam_role.app_role.arn
 
-  container_definitions = var.container_definitions!="" ? var.container_definitions : module.task_definition.json_map_encoded_list
+  container_definitions = var.container_definitions != "" ? var.container_definitions : module.task_definition.json_map_encoded_list
 
- runtime_platform {
+  runtime_platform {
     operating_system_family = var.operating_system_family
     cpu_architecture        = var.cpu_architecture
   }
@@ -68,7 +68,7 @@ resource "aws_ecs_task_definition" "app" {
 
 
 module "task_definition" {
-  source = "cloudposse/ecs-container-definition/aws"
+  source  = "cloudposse/ecs-container-definition/aws"
   version = "v0.58.1"
 
   container_name  = var.container_name
