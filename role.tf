@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "app_policy" {
     ]
 
     resources = [
-      aws_ecs_cluster.app.arn,
+      local.ecs_cluster_arn,
     ]
   }
 }

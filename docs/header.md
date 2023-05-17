@@ -10,8 +10,7 @@ This will spin up a new ECS cluster and fargate service running a simple default
 
 ```
 module "fargate" {
-  !! TODO: update this with final url !!
-  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/"
+  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/?ref=v4.1.0"
 
   app                   = "mywebsite"
   environment           = "main"
@@ -22,11 +21,13 @@ module "fargate" {
   load_balancer_subnets = ["subnet-0ba9...","subnet-abcde"]
   fargate_subnets       = ["subnet-9ba0...","subnet-edcba"]
 
-  health_check = "/healthz"
+  health_check = "/"
 }
 ```
 
 ## Usage and link to base
 
-It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, the state file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. This also pairs well with --insert link for base here--
+It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, the state file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. 
+
+If you would like a ready to use template for this module, it's state bucket as well as CICD templates. Check out [fargate-create][fargate-create]
  

@@ -20,6 +20,12 @@ variable "environment" {
   type = string
 }
 
+# Name of an existing ECS cluster, if left blank it will create one with the app and environment values
+variable "ecs_cluster_name" {
+  type = string
+  default = ""
+}
+
 # Should the module create an iam user with permissions tuned for cicd (cicf.tf)
 variable "create_cicd_user" {
   type    = bool

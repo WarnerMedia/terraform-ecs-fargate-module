@@ -10,8 +10,7 @@ This will spin up a new ECS cluster and fargate service running a simple default
 
 ```
 module "fargate" {
-  !! TODO: update this with final url !!
-  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/"
+  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/?ref=v4.1.0"
 
   app                   = "mywebsite"
   environment           = "main"
@@ -22,13 +21,15 @@ module "fargate" {
   load_balancer_subnets = ["subnet-0ba9...","subnet-abcde"]
   fargate_subnets       = ["subnet-9ba0...","subnet-edcba"]
 
-  health_check = "/healthz"
+  health_check = "/"
 }
 ```
 
 ## Usage and link to base
 
-It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, this file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state]. This also pairs well with --insert link for base here--
+It is recommended that you store your terraform state in a safe location. If the `create_cicd_user` variable is enabled, the state file will contain your aws key id and secret. The easiest method would be to use [S3 state][s3-state].
+
+If you would like a ready to use template for this module, it's state bucket as well as CICD templates. Check out [fargate-create][fargate-create]
 
 ## Inputs
 
@@ -43,8 +44,9 @@ It is recommended that you store your terraform state in a safe location. If the
 | <a name="input_vpc"></a> [vpc](#input\_vpc) | The VPC to use for the Fargate cluster | `any` | n/a | yes |
 | <a name="input_certificate_arn"></a> [certificate\_arn](#input\_certificate\_arn) | The ARN for the SSL certificate, if this is not blank it will use it instead of requesting a dns validated ACM certificate | `string` | `""` | no |
 | <a name="input_container_definitions"></a> [container\_definitions](#input\_container\_definitions) | This is the json formatted container definition for the task. By default, a definition with the indicated container image and cloudwatch logging will be provided. Setting this will override the defaults allowing configuration like environment variables to be set. We recommend using this module to help build the json rather than doing it in a large string: https://registry.terraform.io/modules/cloudposse/ecs-container-definition/aws/latest | `string` | `""` | no |
-| <a name="input_container_image"></a> [container\_image](#input\_container\_image) | The default docker image to deploy with the infrastructure. Note that you can use the fargate CLI for application concerns like deploying actual application images and environment variables on top of the infrastructure provisioned by this template https://github.com/turnerlabs/fargate note that the source for the turner default backend image is here: https://github.com/turnerlabs/turner-defaultbackend | `string` | `"quay.io/turner/turner-defaultbackend:0.2.0"` | no |
+| <a name="input_container_image"></a> [container\_image](#input\_container\_image) | The default docker image to deploy with the infrastructure. Note that you can use the fargate CLI for application concerns like deploying actual application images and environment variables on top of the infrastructure provisioned by this template https://github.com/turnerlabs/fargate note that the source for the turner default backend image is here: https://github.com/turnerlabs/turner-defaultbackend | `string` | `"ghcr.io/warnermedia/fargate-default-backend:v0.9.0"` | no |
 | <a name="input_container_name"></a> [container\_name](#input\_container\_name) | The name of the container to run | `string` | `"app"` | no |
+| <a name="input_cpu_architecture"></a> [cpu\_architecture](#input\_cpu\_architecture) | The CPU Architecture, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform | `string` | `"X86_64"` | no |
 | <a name="input_cpu_units"></a> [cpu\_units](#input\_cpu\_units) | See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size | `number` | `256` | no |
 | <a name="input_create_cicd_user"></a> [create\_cicd\_user](#input\_create\_cicd\_user) | Should the module create an iam user with permissions tuned for cicd (cicf.tf) | `bool` | `false` | no |
 | <a name="input_create_ecs_dashboard"></a> [create\_ecs\_dashboard](#input\_create\_ecs\_dashboard) | Log the ECS events happening in fargate and create a cloudwatch dashboard that shows these messages | `bool` | `false` | no |
@@ -55,8 +57,9 @@ It is recommended that you store your terraform state in a safe location. If the
 | <a name="input_do_https_redirect"></a> [do\_https\_redirect](#input\_do\_https\_redirect) | Should the service do http to https redirects, or just standard http hosting? This is done via alb rules https://aws.amazon.com/premiumsupport/knowledge-center/elb-redirect-http-to-https-using-alb/ | `bool` | `false` | no |
 | <a name="input_do_performance_autoscaling"></a> [do\_performance\_autoscaling](#input\_do\_performance\_autoscaling) | Should the fargate service scale up and down with cpu usage | `bool` | `false` | no |
 | <a name="input_domain"></a> [domain](#input\_domain) | The domain for r53 registration, leave blank to indicate not using route53 | `string` | `""` | no |
-| <a name="input_ecs_autoscale_max_instances"></a> [ecs\_autoscale\_max\_instances](#input\_ecs\_autoscale\_max\_instances) | The maximum number of containers that should be running. used by both autoscale-perf.tf and autoscale.time.tf | `number` | `4` | no |
+| <a name="input_ecs_autoscale_max_instances"></a> [ecs\_autoscale\_max\_instances](#input\_ecs\_autoscale\_max\_instances) | The maximum number of containers that should be running when scaling up | `number` | `4` | no |
 | <a name="input_ecs_autoscale_min_instances"></a> [ecs\_autoscale\_min\_instances](#input\_ecs\_autoscale\_min\_instances) | The minimum number of containers that should be running. Must be at least 1. For production, consider using at least "2". | `number` | `1` | no |
+| <a name="input_ecs_cluster_name"></a> [ecs\_cluster\_name](#input\_ecs\_cluster\_name) | Name of an existing ECS cluster, if left blank it will create one with the app and environment values | `string` | `""` | no |
 | <a name="input_ecs_lambda_runtime"></a> [ecs\_lambda\_runtime](#input\_ecs\_lambda\_runtime) | The lambda runtime for the ecs dashboard, provided here so that it is easy to update to the latest supported | `string` | `"nodejs14.x"` | no |
 | <a name="input_health_check"></a> [health\_check](#input\_health\_check) | The path to the health check for the load balancer to know if the container(s) are ready | `string` | `"/"` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | How often to check the liveliness of the container | `string` | `"30"` | no |
@@ -68,6 +71,8 @@ It is recommended that you store your terraform state in a safe location. If the
 | <a name="input_lb_protocol"></a> [lb\_protocol](#input\_lb\_protocol) | The load balancer protocol | `string` | `"HTTP"` | no |
 | <a name="input_logs_retention_in_days"></a> [logs\_retention\_in\_days](#input\_logs\_retention\_in\_days) | Specifies the number of days you want to retain log events | `number` | `90` | no |
 | <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size | `number` | `512` | no |
+| <a name="input_operating_system_family"></a> [operating\_system\_family](#input\_operating\_system\_family) | The OS Family of the task, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform | `string` | `"LINUX"` | no |
+| <a name="input_platform_version"></a> [platform\_version](#input\_platform\_version) | The fargate platform version. These version numbers are different between linux and windows, make sure to use the correct value or leave it at LATEST: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html | `string` | `"LATEST"` | no |
 | <a name="input_replicas"></a> [replicas](#input\_replicas) | How many containers to run | `number` | `1` | no |
 | <a name="input_scaling_cpu_high_threshold"></a> [scaling\_cpu\_high\_threshold](#input\_scaling\_cpu\_high\_threshold) | If the average CPU utilization over a minute rises to this threshold, the number of containers will be increased (but not above ecs\_autoscale\_max\_instances). | `string` | `"80"` | no |
 | <a name="input_scaling_cpu_low_threshold"></a> [scaling\_cpu\_low\_threshold](#input\_scaling\_cpu\_low\_threshold) | If the average CPU utilization over a minute drops to this threshold, the number of containers will be reduced (but not below ecs\_autoscale\_min\_instances). | `string` | `"20"` | no |
@@ -81,6 +86,9 @@ It is recommended that you store your terraform state in a safe location. If the
 | Name | Description |
 |------|-------------|
 | <a name="output_cicd_keys"></a> [cicd\_keys](#output\_cicd\_keys) | A command to run that can extract the AWS keys for the CICD user to use in a build system (remove the \ in the select section |
+| <a name="output_ecs_cluster_arn"></a> [ecs\_cluster\_arn](#output\_ecs\_cluster\_arn) | The arn of the ecs cluster that was created or referenced |
+| <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | The name of the ecs cluster that was created or referenced |
+| <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | The arn of the ecs cluster that was created or referenced |
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | The fully qualified domain name created if dns based ACM is enabled |
 | <a name="output_lb_dns"></a> [lb\_dns](#output\_lb\_dns) | The load balancer DNS name |
 | <a name="output_secret_arn"></a> [secret\_arn](#output\_secret\_arn) | The arn of the created secret manager (if enabled) |
@@ -89,4 +97,5 @@ It is recommended that you store your terraform state in a safe location. If the
 [fargate]: https://aws.amazon.com/fargate/
 [fargate-template]: https://github.com/turnerlabs/terraform-ecs-fargate
 [s3-state]: https://www.terraform.io/language/settings/backends/s3
+[fargate-create]: https://github.com/turnerlabs/fargate-create
 <!-- END_TF_DOCS -->

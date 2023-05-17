@@ -47,7 +47,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
   threshold           = var.scaling_cpu_high_threshold
 
   dimensions = {
-    ClusterName = aws_ecs_cluster.app.name
+    ClusterName = local.ecs_cluster_name
     ServiceName = aws_ecs_service.app.name
   }
 
@@ -67,7 +67,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
   threshold           = var.scaling_cpu_low_threshold
 
   dimensions = {
-    ClusterName = aws_ecs_cluster.app.name
+    ClusterName = local.ecs_cluster_name
     ServiceName = aws_ecs_service.app.name
   }
 

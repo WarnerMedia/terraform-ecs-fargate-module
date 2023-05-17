@@ -16,7 +16,7 @@ resource "aws_cloudwatch_event_rule" "ecs_event_stream" {
   event_pattern = <<PATTERN
   {
     "detail": {
-      "clusterArn": ["${aws_ecs_cluster.app.arn}"]
+      "clusterArn": ["${local.ecs_cluster_arn}"]
     }
   }
   

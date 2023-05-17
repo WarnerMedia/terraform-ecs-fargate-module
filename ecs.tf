@@ -12,7 +12,22 @@
  * migrated the real application containers to the task definition.
  */
 
+ locals {
+  ecs_cluster_arn = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].arn : aws_ecs_cluster.app[0].arn
+  ecs_cluster_id = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].id : aws_ecs_cluster.app[0].id
+  ecs_cluster_name = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].cluster_name : aws_ecs_cluster.app[0].name
+  whatever = "asdasd"
+ }
+
+ data "aws_ecs_cluster" "app" {
+  count = var.ecs_cluster_name != "" ? 1 : 0
+
+  cluster_name = var.ecs_cluster_name
+ }
+
 resource "aws_ecs_cluster" "app" {
+  count = var.ecs_cluster_name == "" ? 1 : 0
+
   name = "${var.app}-${var.environment}"
   setting {
     name  = "containerInsights"
@@ -23,7 +38,7 @@ resource "aws_ecs_cluster" "app" {
 
 resource "aws_appautoscaling_target" "app_scale_target" {
   service_namespace  = "ecs"
-  resource_id        = "service/${aws_ecs_cluster.app.name}/${aws_ecs_service.app.name}"
+  resource_id        = "service/${local.ecs_cluster_name}/${aws_ecs_service.app.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   max_capacity       = var.ecs_autoscale_max_instances
   min_capacity       = var.ecs_autoscale_min_instances
@@ -89,7 +104,7 @@ module "task_definition" {
 
 resource "aws_ecs_service" "app" {
   name            = "${var.app}-${var.environment}"
-  cluster         = aws_ecs_cluster.app.id
+  cluster         = local.ecs_cluster_id
   launch_type     = "FARGATE"
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.replicas
@@ -147,4 +162,19 @@ resource "aws_cloudwatch_log_group" "logs" {
   name              = "/fargate/service/${var.app}-${var.environment}"
   retention_in_days = var.logs_retention_in_days
   tags              = var.tags
+}
+
+# The name of the ecs cluster that was created or referenced 
+output "ecs_cluster_name" {
+  value = local.ecs_cluster_name
+}
+
+# The arn of the ecs cluster that was created or referenced 
+output "ecs_cluster_arn" {
+  value = local.ecs_cluster_arn
+}
+
+# The arn of the fargate ecs service that was created
+output "ecs_service_name" {
+  value = aws_ecs_service.app.name
 }
