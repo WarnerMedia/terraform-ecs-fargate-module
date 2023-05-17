@@ -16,7 +16,6 @@
   ecs_cluster_arn = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].arn : aws_ecs_cluster.app[0].arn
   ecs_cluster_id = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].id : aws_ecs_cluster.app[0].id
   ecs_cluster_name = var.ecs_cluster_name != "" ? data.aws_ecs_cluster.app[0].cluster_name : aws_ecs_cluster.app[0].name
-  whatever = "asdasd"
  }
 
  data "aws_ecs_cluster" "app" {
