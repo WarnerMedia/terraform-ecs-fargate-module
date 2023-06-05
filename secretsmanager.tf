@@ -274,7 +274,7 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
 }
 # The short name id of the created secret manager (if enabled)
 output "secret_id" {
-value = var.secrets_manager ? aws_secretsmanager_secret.sm_secret[0].id : ""
+  value = var.secrets_manager ? aws_secretsmanager_secret.sm_secret[0].id : ""
 }
 
 # The arn of the created secret manager (if enabled)

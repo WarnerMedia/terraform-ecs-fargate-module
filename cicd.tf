@@ -12,7 +12,7 @@ resource "aws_iam_access_key" "cicd_keys" {
 
 # grant required permissions to deploy
 data "aws_iam_policy_document" "cicd_policy" {
-    count = var.create_cicd_user ? 1 : 0
+  count = var.create_cicd_user ? 1 : 0
 
   # allows user to push/pull to the registry
   statement {
@@ -74,7 +74,7 @@ resource "aws_iam_user_policy" "cicd_user_policy" {
 
 data "aws_ecr_repository" "ecr" {
   count = var.create_cicd_user ? 1 : 0
-  name = var.default_ecr
+  name  = var.default_ecr
 }
 
 # A command to run that can extract the AWS keys for the CICD user to use in a build system

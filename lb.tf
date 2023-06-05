@@ -7,7 +7,7 @@ resource "aws_alb" "main" {
   name = "${var.app}-${var.environment}"
 
   # launch lbs in public or private subnets based on "internal" variable
-  internal        = ! var.create_public_ip
+  internal        = !var.create_public_ip
   subnets         = var.load_balancer_subnets
   security_groups = [aws_security_group.nsg_lb.id]
   tags            = var.tags

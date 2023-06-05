@@ -6,7 +6,7 @@ variable "app" {
 # The name of the elastic container registry in this account 
 #  that the CICD user will be given write permission
 variable "default_ecr" {
-  type = string
+  type    = string
   default = ""
 }
 
@@ -18,6 +18,12 @@ variable "container_name" {
 # The environment that is being built
 variable "environment" {
   type = string
+}
+
+# Name of an existing ECS cluster, if left blank it will create one with the app and environment values
+variable "ecs_cluster_name" {
+  type    = string
+  default = ""
 }
 
 # Should the module create an iam user with permissions tuned for cicd (cicf.tf)
@@ -44,12 +50,12 @@ variable "vpc" {
 
 # These are the subnet ids that the load balancer will use
 variable "load_balancer_subnets" {
-  type = list
+  type = list(any)
 }
 
 # These are the subnet ids that the containers will use
 variable "fargate_subnets" {
-  type = list
+  type = list(any)
 }
 
 # The port the standard http load balancer will listen on
@@ -64,7 +70,7 @@ variable "lb_protocol" {
 
 # Should the service do http to https redirects, or just standard http hosting? This is done via alb rules 
 #  https://aws.amazon.com/premiumsupport/knowledge-center/elb-redirect-http-to-https-using-alb/
-variable do_https_redirect {
+variable "do_https_redirect" {
   type    = bool
   default = false
 }
@@ -141,8 +147,8 @@ variable "domain" {
 # This is the policy that controls the specifics about TLS/SSL versions and supported ciphers. This default will only support TLS 1.2
 #  https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
 variable "ssl_policy" {
-  type=string
-  default="ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+  type    = string
+  default = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
 }
 
 #indicates if a secrets manager 
@@ -161,7 +167,7 @@ variable "secrets_manager_recovery_window_in_days" {
 # A list of users that will have full access to the secrets manager and its kms key, the current user applying the terraform 
 #  will have access as well.
 variable "secrets_users" {
-  type = list
+  type    = list(any)
   default = []
 }
 
@@ -199,14 +205,14 @@ variable "memory_size" {
 #  configuration like environment variables to be set. We recommend using this module to help build the json 
 #  rather than doing it in a large string: https://registry.terraform.io/modules/cloudposse/ecs-container-definition/aws/latest
 variable "container_definitions" {
-  type = string
+  type    = string
   default = ""
 }
 
 
 # Should the fargate service scale up and down with cpu usage
 variable "do_performance_autoscaling" {
-  type = bool
+  type    = bool
   default = false
 }
 
@@ -226,31 +232,31 @@ variable "scaling_cpu_high_threshold" {
 # Must be at least 1.
 # For production, consider using at least "2".
 variable "ecs_autoscale_min_instances" {
-  type = number
+  type    = number
   default = 1
 }
 
 # The maximum number of containers that should be running when scaling up
 variable "ecs_autoscale_max_instances" {
-  type = number
+  type    = number
   default = 4
 }
 
 # The OS Family of the task, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform 
 variable "operating_system_family" {
-  type = string
+  type    = string
   default = "LINUX"
 }
 
 # The CPU Architecture, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform
 variable "cpu_architecture" {
-  type = string
+  type    = string
   default = "X86_64"
 }
 
 # The fargate platform version. These version numbers are different between linux and windows, make sure to use the correct
 #  value or leave it at LATEST: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html
 variable "platform_version" {
-  type = string
+  type    = string
   default = "LATEST"
 }
