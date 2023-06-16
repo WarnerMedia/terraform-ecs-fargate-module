@@ -10,7 +10,7 @@ This will spin up a new ECS cluster and fargate service running a simple default
 
 ```
 module "fargate" {
-  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/?ref=v4.1.0"
+  source = "git@github.com:warnermediacode/terraform-ecs-fargate-module/?ref=v4.2.0"
 
   app                   = "mywebsite"
   environment           = "main"

@@ -104,7 +104,7 @@ module "task_definition" {
 resource "aws_ecs_service" "app" {
   name            = "${var.app}-${var.environment}"
   cluster         = local.ecs_cluster_id
-  launch_type     = "FARGATE"
+  #launch_type     = "FARGATE"
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.replicas
 
@@ -127,6 +127,21 @@ resource "aws_ecs_service" "app" {
 
   # workaround for https://github.com/hashicorp/terraform/issues/12634
   depends_on = [aws_alb_listener.http]
+
+  capacity_provider_strategy  {
+    capacity_provider = "FARGATE"
+    weight = local.fargate_percentage
+    base = var.fixed_non_spot_count
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight = var.spot_percentage
+  }
+}
+
+locals {
+  fargate_percentage = 100 - var.spot_percentage
 }
 
 # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html
@@ -162,6 +177,8 @@ resource "aws_cloudwatch_log_group" "logs" {
   retention_in_days = var.logs_retention_in_days
   tags              = var.tags
 }
+
+
 
 # The name of the ecs cluster that was created or referenced 
 output "ecs_cluster_name" {

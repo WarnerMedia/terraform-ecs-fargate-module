@@ -248,7 +248,7 @@ variable "operating_system_family" {
   default = "LINUX"
 }
 
-# The CPU Architecture, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform
+# The CPU Architecture X86_64 or ARM64 for Graviton, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform
 variable "cpu_architecture" {
   type    = string
   default = "X86_64"
@@ -259,4 +259,17 @@ variable "cpu_architecture" {
 variable "platform_version" {
   type    = string
   default = "LATEST"
+}
+
+# The percentage of tasks in the service that should run as spot instances. This also works for ARM/Graviton, but beware, 
+#  some regions don't have any capacity or support for ARM spot
+variable "spot_percentage" {
+  type = number
+  default = 0
+}
+
+# How many tasks are required stay normal fargate (non-spot) instances despite the percentages
+variable "fixed_non_spot_count" {
+  type = number
+  default = 1 
 }
