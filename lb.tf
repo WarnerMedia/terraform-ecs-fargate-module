@@ -3,6 +3,12 @@
 # delete either of these if your app doesn't need them
 # but you need at least one
 
+# This is the default list of cidr blocks that will be allowed to access the ALB on http and/or https
+variable "custom_default_alb_cidr_blocks" {
+  type = list(string)
+  default = ["0.0.0.0/0"]
+}
+
 resource "aws_alb" "main" {
   name = "${var.app}-${var.environment}"
 
