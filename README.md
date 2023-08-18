@@ -52,6 +52,7 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="input_create_ecs_dashboard"></a> [create\_ecs\_dashboard](#input\_create\_ecs\_dashboard) | Log the ECS events happening in fargate and create a cloudwatch dashboard that shows these messages | `bool` | `false` | no |
 | <a name="input_create_performance_dashboard"></a> [create\_performance\_dashboard](#input\_create\_performance\_dashboard) | Create a cloudwatch dashboard containing popular performance metrics about fargate | `bool` | `true` | no |
 | <a name="input_create_public_ip"></a> [create\_public\_ip](#input\_create\_public\_ip) | Whether the load balancer is available on the public internet. The containers will always get subnet ips. | `bool` | `false` | no |
+| <a name="input_custom_default_alb_cidr_blocks"></a> [custom\_default\_alb\_cidr\_blocks](#input\_custom\_default\_alb\_cidr\_blocks) | This is the default list of cidr blocks that will be allowed to access the ALB on http and/or https | `list(string)` | <pre>[<br>  "0.0.0.0/0"<br>]</pre> | no |
 | <a name="input_default_ecr"></a> [default\_ecr](#input\_default\_ecr) | The name of the elastic container registry in this account that the CICD user will be given write permission | `string` | `""` | no |
 | <a name="input_deregistration_delay"></a> [deregistration\_delay](#input\_deregistration\_delay) | The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused | `string` | `"30"` | no |
 | <a name="input_do_https_redirect"></a> [do\_https\_redirect](#input\_do\_https\_redirect) | Should the service do http to https redirects, or just standard http hosting? This is done via alb rules https://aws.amazon.com/premiumsupport/knowledge-center/elb-redirect-http-to-https-using-alb/ | `bool` | `false` | no |
@@ -87,6 +88,7 @@ If you would like a ready to use template for this module, it's state bucket as 
 
 | Name | Description |
 |------|-------------|
+| <a name="output_alb_nsg_id"></a> [alb\_nsg\_id](#output\_alb\_nsg\_id) | This is the network security group id (sg-blah) for the ALB. This could be useful if you needed to directly add new rules |
 | <a name="output_cicd_keys"></a> [cicd\_keys](#output\_cicd\_keys) | A command to run that can extract the AWS keys for the CICD user to use in a build system (remove the \ in the select section |
 | <a name="output_ecs_cluster_arn"></a> [ecs\_cluster\_arn](#output\_ecs\_cluster\_arn) | The arn of the ecs cluster that was created or referenced |
 | <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | The name of the ecs cluster that was created or referenced |

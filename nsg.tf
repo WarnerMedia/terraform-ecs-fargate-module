@@ -49,3 +49,8 @@ resource "aws_security_group_rule" "nsg_task_egress_rule" {
 
   security_group_id = aws_security_group.nsg_task.id
 }
+
+# This is the network security group id (sg-blah) for the ALB. This could be useful if you needed to directly add new rules
+output "alb_nsg_id" {
+  value=aws_security_group.nsg_lb.id
+}

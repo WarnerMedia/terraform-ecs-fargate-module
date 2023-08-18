@@ -23,6 +23,6 @@ resource "aws_security_group_rule" "ingress_lb_https" {
   from_port         = var.https_port
   to_port           = var.https_port
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = var.custom_default_alb_cidr_blocks
   security_group_id = aws_security_group.nsg_lb.id
 }
