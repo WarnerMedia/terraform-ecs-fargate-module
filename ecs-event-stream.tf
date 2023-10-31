@@ -30,19 +30,18 @@ resource "aws_cloudwatch_event_target" "ecs_event_stream" {
   arn   = aws_lambda_function.ecs_event_stream[0].arn
 }
 
-data "template_file" "lambda_source" {
-  template = <<EOF
+locals {
+  lambda_code = <<EOF
 exports.handler = (event, context, callback) => {
   console.log(JSON.stringify(event));
 }
 EOF
-
 }
 
 data "archive_file" "lambda_zip" {
   count                   = var.create_ecs_dashboard ? 1 : 0
   type                    = "zip"
-  source_content          = data.template_file.lambda_source.rendered
+  source_content          = local.lambda_code
   source_content_filename = "index.js"
   output_path             = "ecs-events-lambda-${var.app}.zip"
 }
