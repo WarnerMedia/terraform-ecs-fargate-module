@@ -94,6 +94,7 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | The name of the ecs cluster that was created or referenced |
 | <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | The arn of the fargate ecs service that was created |
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | The fully qualified domain name created if dns based ACM is enabled |
+| <a name="output_lb_arn"></a> [lb\_arn](#output\_lb\_arn) | The arn of the load balancer |
 | <a name="output_lb_dns"></a> [lb\_dns](#output\_lb\_dns) | The load balancer DNS name |
 | <a name="output_secret_arn"></a> [secret\_arn](#output\_secret\_arn) | The arn of the created secret manager (if enabled) |
 | <a name="output_secret_id"></a> [secret\_id](#output\_secret\_id) | The short name id of the created secret manager (if enabled) |

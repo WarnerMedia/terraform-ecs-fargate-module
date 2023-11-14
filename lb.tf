@@ -122,3 +122,8 @@ resource "aws_s3_bucket_public_access_block" "example" {
 output "lb_dns" {
   value = aws_alb.main.dns_name
 }
+
+# The arn of the load balancer
+output "lb_arn" {
+  value = aws_alb.main.arn
+}
