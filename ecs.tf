@@ -64,6 +64,25 @@ resource "aws_ecs_task_definition" "app" {
   }
 
   tags = var.tags
+
+  // great explanation of how this works:
+  // https://stackoverflow.com/questions/68272156/terraform-ecs-task-definition-dynamic-nested-efs-volumes
+
+  dynamic "volume" {
+    for_each = var.volumes
+    content {
+      name = volume.value.volume_name
+
+      dynamic "efs_volume_configuration" {
+        for_each = volume.value.efs_volume_configuration
+
+        content {
+          file_system_id = efs_volume_configuration.value.efs_file_system_id
+          root_directory = efs_volume_configuration.value.root_directory
+        }
+      }
+    }
+  }
 }
 
 
@@ -138,6 +157,9 @@ resource "aws_ecs_service" "app" {
     capacity_provider = "FARGATE_SPOT"
     weight = var.spot_percentage
   }
+
+  deployment_maximum_percent = var.deployment_maximum_percent
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
 }
 
 locals {
@@ -193,4 +215,12 @@ output "ecs_cluster_arn" {
 # The arn of the fargate ecs service that was created
 output "ecs_service_name" {
   value = aws_ecs_service.app.name
+}
+
+output "ecs_execution_role_arn" {
+  value=aws_iam_role.ecsTaskExecutionRole.arn
+}
+
+output "ecs_execution_role_name" {
+  value=aws_iam_role.ecsTaskExecutionRole.name
 }
