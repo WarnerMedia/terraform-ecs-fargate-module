@@ -217,10 +217,12 @@ output "ecs_service_name" {
   value = aws_ecs_service.app.name
 }
 
+# The arn of the role used by ecs when starting the task
 output "ecs_execution_role_arn" {
   value=aws_iam_role.ecsTaskExecutionRole.arn
 }
 
+# The name of the role used by ecs when starting the task
 output "ecs_execution_role_name" {
   value=aws_iam_role.ecsTaskExecutionRole.name
 }
