@@ -95,8 +95,10 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="output_cicd_keys"></a> [cicd\_keys](#output\_cicd\_keys) | A command to run that can extract the AWS keys for the CICD user to use in a build system (remove the \ in the select section |
 | <a name="output_ecs_cluster_arn"></a> [ecs\_cluster\_arn](#output\_ecs\_cluster\_arn) | The arn of the ecs cluster that was created or referenced |
 | <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | The name of the ecs cluster that was created or referenced |
-| <a name="output_ecs_execution_role_arn"></a> [ecs\_execution\_role\_arn](#output\_ecs\_execution\_role\_arn) | n/a |
-| <a name="output_ecs_execution_role_name"></a> [ecs\_execution\_role\_name](#output\_ecs\_execution\_role\_name) | n/a |
+| <a name="output_ecs_execution_role_arn"></a> [ecs\_execution\_role\_arn](#output\_ecs\_execution\_role\_arn) | The arn of the role used by ecs when starting the task |
+| <a name="output_ecs_execution_role_name"></a> [ecs\_execution\_role\_name](#output\_ecs\_execution\_role\_name) | The name of the role used by ecs when starting the task |
+| <a name="output_ecs_role_arn"></a> [ecs\_role\_arn](#output\_ecs\_role\_arn) | The arn of the role assumed by the task at runtime |
+| <a name="output_ecs_role_name"></a> [ecs\_role\_name](#output\_ecs\_role\_name) | The name of the role assumed by the task at runtime |
 | <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | The arn of the fargate ecs service that was created |
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | The fully qualified domain name created if dns based ACM is enabled |
 | <a name="output_lb_arn"></a> [lb\_arn](#output\_lb\_arn) | The arn of the load balancer |
