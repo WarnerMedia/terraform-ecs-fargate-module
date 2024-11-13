@@ -126,7 +126,7 @@ variable "create_ecs_dashboard" {
 # The lambda runtime for the ecs dashboard, provided here so that it is easy to update to the latest supported
 variable "ecs_lambda_runtime" {
   type    = string
-  default = "nodejs14.x"
+  default = "nodejs20.x"
 }
 
 # The port to listen on for HTTPS (if it is enabled), always use 443
@@ -264,12 +264,32 @@ variable "platform_version" {
 # The percentage of tasks in the service that should run as spot instances. This also works for ARM/Graviton, but beware, 
 #  some regions don't have any capacity or support for ARM spot
 variable "spot_percentage" {
-  type = number
+  type    = number
   default = 0
 }
 
 # How many tasks are required stay normal fargate (non-spot) instances despite the percentages
 variable "fixed_non_spot_count" {
-  type = number
-  default = 1 
+  type    = number
+  default = 1
+}
+
+# This allows for EFS volumes to be attached to your task
+variable "volumes" {
+  type    = any
+  default = []
+}
+
+# The upper limit on the number of tasks allowed running or pending.
+#  See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DeploymentConfiguration.html
+variable "deployment_maximum_percent" {
+  type    = number
+  default = null
+}
+
+# The lower limit on the number of your service's tasks that must remain in the RUNNING state during a deployment
+#  See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DeploymentConfiguration.html
+variable "deployment_minimum_healthy_percent" {
+  type    = number
+  default = null
 }

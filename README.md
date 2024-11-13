@@ -10,7 +10,7 @@ This will spin up a new ECS cluster and fargate service running a simple default
 
 ```
 module "fargate" {
-  source = "git@github.com:warnermedia/terraform-ecs-fargate-module?ref=v4.2.3"
+  source = "git@github.com:warnermedia/terraform-ecs-fargate-module/?ref=v4.3.0"
 
   app                   = "mywebsite"
   environment           = "main"
@@ -54,6 +54,8 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="input_create_public_ip"></a> [create\_public\_ip](#input\_create\_public\_ip) | Whether the load balancer is available on the public internet. The containers will always get subnet ips. | `bool` | `false` | no |
 | <a name="input_custom_default_alb_cidr_blocks"></a> [custom\_default\_alb\_cidr\_blocks](#input\_custom\_default\_alb\_cidr\_blocks) | This is the default list of cidr blocks that will be allowed to access the ALB on http and/or https | `list(string)` | <pre>[<br>  "0.0.0.0/0"<br>]</pre> | no |
 | <a name="input_default_ecr"></a> [default\_ecr](#input\_default\_ecr) | The name of the elastic container registry in this account that the CICD user will be given write permission | `string` | `""` | no |
+| <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | The upper limit on the number of tasks allowed running or pending. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DeploymentConfiguration.html | `number` | `null` | no |
+| <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | The lower limit on the number of your service's tasks that must remain in the RUNNING state during a deployment See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DeploymentConfiguration.html | `number` | `null` | no |
 | <a name="input_deregistration_delay"></a> [deregistration\_delay](#input\_deregistration\_delay) | The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused | `string` | `"30"` | no |
 | <a name="input_do_https_redirect"></a> [do\_https\_redirect](#input\_do\_https\_redirect) | Should the service do http to https redirects, or just standard http hosting? This is done via alb rules https://aws.amazon.com/premiumsupport/knowledge-center/elb-redirect-http-to-https-using-alb/ | `bool` | `false` | no |
 | <a name="input_do_performance_autoscaling"></a> [do\_performance\_autoscaling](#input\_do\_performance\_autoscaling) | Should the fargate service scale up and down with cpu usage | `bool` | `false` | no |
@@ -61,7 +63,7 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="input_ecs_autoscale_max_instances"></a> [ecs\_autoscale\_max\_instances](#input\_ecs\_autoscale\_max\_instances) | The maximum number of containers that should be running when scaling up | `number` | `4` | no |
 | <a name="input_ecs_autoscale_min_instances"></a> [ecs\_autoscale\_min\_instances](#input\_ecs\_autoscale\_min\_instances) | The minimum number of containers that should be running. Must be at least 1. For production, consider using at least "2". | `number` | `1` | no |
 | <a name="input_ecs_cluster_name"></a> [ecs\_cluster\_name](#input\_ecs\_cluster\_name) | Name of an existing ECS cluster, if left blank it will create one with the app and environment values | `string` | `""` | no |
-| <a name="input_ecs_lambda_runtime"></a> [ecs\_lambda\_runtime](#input\_ecs\_lambda\_runtime) | The lambda runtime for the ecs dashboard, provided here so that it is easy to update to the latest supported | `string` | `"nodejs14.x"` | no |
+| <a name="input_ecs_lambda_runtime"></a> [ecs\_lambda\_runtime](#input\_ecs\_lambda\_runtime) | The lambda runtime for the ecs dashboard, provided here so that it is easy to update to the latest supported | `string` | `"nodejs20.x"` | no |
 | <a name="input_fixed_non_spot_count"></a> [fixed\_non\_spot\_count](#input\_fixed\_non\_spot\_count) | How many tasks are required stay normal fargate (non-spot) instances despite the percentages | `number` | `1` | no |
 | <a name="input_health_check"></a> [health\_check](#input\_health\_check) | The path to the health check for the load balancer to know if the container(s) are ready | `string` | `"/"` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | How often to check the liveliness of the container | `string` | `"30"` | no |
@@ -83,6 +85,7 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="input_secrets_users"></a> [secrets\_users](#input\_secrets\_users) | A list of users that will have full access to the secrets manager and its kms key, the current user applying the terraform will have access as well. | `list(any)` | `[]` | no |
 | <a name="input_spot_percentage"></a> [spot\_percentage](#input\_spot\_percentage) | The percentage of tasks in the service that should run as spot instances. This also works for ARM/Graviton, but beware, some regions don't have any capacity or support for ARM spot | `number` | `0` | no |
 | <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | This is the policy that controls the specifics about TLS/SSL versions and supported ciphers. This default will only support TLS 1.2 https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies | `string` | `"ELBSecurityPolicy-TLS-1-2-Ext-2018-06"` | no |
+| <a name="input_volumes"></a> [volumes](#input\_volumes) | This allows for EFS volumes to be attached to your task | `any` | `[]` | no |
 
 ## Outputs
 
@@ -92,6 +95,10 @@ If you would like a ready to use template for this module, it's state bucket as 
 | <a name="output_cicd_keys"></a> [cicd\_keys](#output\_cicd\_keys) | A command to run that can extract the AWS keys for the CICD user to use in a build system (remove the \ in the select section |
 | <a name="output_ecs_cluster_arn"></a> [ecs\_cluster\_arn](#output\_ecs\_cluster\_arn) | The arn of the ecs cluster that was created or referenced |
 | <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | The name of the ecs cluster that was created or referenced |
+| <a name="output_ecs_execution_role_arn"></a> [ecs\_execution\_role\_arn](#output\_ecs\_execution\_role\_arn) | The arn of the role used by ecs when starting the task |
+| <a name="output_ecs_execution_role_name"></a> [ecs\_execution\_role\_name](#output\_ecs\_execution\_role\_name) | The name of the role used by ecs when starting the task |
+| <a name="output_ecs_role_arn"></a> [ecs\_role\_arn](#output\_ecs\_role\_arn) | The arn of the role assumed by the task at runtime |
+| <a name="output_ecs_role_name"></a> [ecs\_role\_name](#output\_ecs\_role\_name) | The name of the role assumed by the task at runtime |
 | <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | The arn of the fargate ecs service that was created |
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | The fully qualified domain name created if dns based ACM is enabled |
 | <a name="output_lb_arn"></a> [lb\_arn](#output\_lb\_arn) | The arn of the load balancer |

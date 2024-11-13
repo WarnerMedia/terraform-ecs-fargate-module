@@ -37,3 +37,13 @@ data "aws_iam_policy_document" "app_role_assume_role_policy" {
     }
   }
 }
+
+# The name of the role assumed by the task at runtime
+output "ecs_role_name" {
+  value = aws_iam_role.app_role.name
+}
+
+# The arn of the role assumed by the task at runtime
+output "ecs_role_arn" {
+  value = aws_iam_role.app_role.arn
+}
