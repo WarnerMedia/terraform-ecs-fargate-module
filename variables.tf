@@ -126,7 +126,7 @@ variable "create_ecs_dashboard" {
 # The lambda runtime for the ecs dashboard, provided here so that it is easy to update to the latest supported
 variable "ecs_lambda_runtime" {
   type    = string
-  default = "nodejs20.x"
+  default = "nodejs24.x"
 }
 
 # The port to listen on for HTTPS (if it is enabled), always use 443
