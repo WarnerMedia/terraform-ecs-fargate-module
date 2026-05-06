@@ -43,6 +43,7 @@ data "aws_iam_policy_document" "cicd_policy" {
       "ecs:DescribeTaskDefinition",
       "ecs:UpdateService",
       "ecs:RegisterTaskDefinition",
+      "ecs:TagResource"
     ]
 
     resources = [
