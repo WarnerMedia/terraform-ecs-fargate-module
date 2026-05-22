@@ -71,6 +71,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket_lifecycle_multipart" {
     id     = "cleanup"
     status = "Enabled"
 
+    filter {
+      prefix = var.lb_access_logs_lifecycle_filter_prefix
+    }
+
     # This should not happen, but just in case
     abort_incomplete_multipart_upload {
       days_after_initiation = 1
