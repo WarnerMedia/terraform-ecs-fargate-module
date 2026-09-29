@@ -111,6 +111,11 @@ variable "lb_access_logs_expiration_days" {
   default = "3"
 }
 
+# Optional prefix filter for lb access logs lifecycle rule. Empty string matches all objects
+variable "lb_access_logs_lifecycle_filter_prefix" {
+  default = ""
+}
+
 # Create a cloudwatch dashboard containing popular performance metrics about fargate
 variable "create_performance_dashboard" {
   type    = bool
